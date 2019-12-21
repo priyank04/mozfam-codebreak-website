@@ -1,97 +1,65 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li>
-        <a
-          href="https://vuejs.org"
-          target="_blank"
-        >
-          Core Docs
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://forum.vuejs.org"
-          target="_blank"
-        >
-          Forum
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://chat.vuejs.org"
-          target="_blank"
-        >
-          Community Chat
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://twitter.com/vuejs"
-          target="_blank"
-        >
-          Twitter
-        </a>
-      </li>
-      <br>
-      <li>
-        <a
-          href="http://vuejs-templates.github.io/webpack/"
-          target="_blank"
-        >
-          Docs for This Template
-        </a>
-      </li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li>
-        <a
-          href="http://router.vuejs.org/"
-          target="_blank"
-        >
-          vue-router
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vuex.vuejs.org/"
-          target="_blank"
-        >
-          vuex
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vue-loader.vuejs.org/"
-          target="_blank"
-        >
-          vue-loader
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-        >
-          awesome-vue
-        </a>
-      </li>
-    </ul>
-  </div>
+  <v-card class="mx-auto" color="grey lighten-4" max-width="600">
+    <v-card-title>
+      <v-icon :color="checking ? 'red lighten-2' : 'indigo'" class="mr-5" size="64" @click="takePulse">
+        mdi-heart-pulse
+      </v-icon>
+      <v-layout column align-start>
+        <div class="caption grey--text text-uppercase">
+          Heart rate HelloWorld
+        </div>
+        <div>
+          <span class="display-2 font-weight-black" v-text="avg || '—'"></span>
+          <strong v-if="avg">BPM</strong>
+        </div>
+      </v-layout>
+      <v-spacer></v-spacer>
+      <v-btn icon class="align-self-start" size="28">
+        <v-icon>mdi-arrow-right-thick</v-icon>
+      </v-btn>
+    </v-card-title>
+
+    <v-sheet color="transparent">
+      <v-sparkline :smooth="16" :gradient="['#f72047', '#ffd200', '#1feaea']" :line-width="3" :key="String(avg)" :value="heartbeats" auto-draw
+        stroke-linecap="round"
+      ></v-sparkline>
+    </v-sheet>
+  </v-card>
 </template>
 
 <script>
+const exhale = ms =>
+  new Promise(resolve => setTimeout(resolve, ms))
 export default {
   name: 'HelloWorld',
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
+  data: () => ({
+    checking: false,
+    heartbeats: []
+  }),
+  computed: {
+    avg () {
+      const sum = this.heartbeats.reduce((acc, cur) => acc + cur, 0)
+      const length = this.heartbeats.length
+      if (!sum && !length) return 0
+      return Math.ceil(sum / length)
+    }
+  },
+  created () {
+    this.takePulse(false)
+  },
+  methods: {
+    heartbeat () {
+      return Math.ceil(Math.random() * (120 - 80) + 80)
+    },
+    async takePulse (inhale = true) {
+      this.checking = true
+      inhale && await exhale(1000)
+      this.heartbeats = Array.from({ length: 20 }, this.heartbeat)
+      this.checking = false
     }
   }
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
